@@ -1,0 +1,33 @@
+version: '2'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: flight-app
+    container_name: app
+    restart: always
+    tty: true
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public
+      SERVICE_NAME: app
+      APP_NAME: flight-app
+      APP_ENV: production
+      APP_DEBUG: false
+      APP_KEY: base64:DO2CtMF9llUKkZi27gOfUx6XnLfY/qgkdN9mu6p894w=
+      REDIS_HOST: db
+      REDIS_PORT: 6379
+    depends_on:
+      - 'db'
+    ports:
+      - '3000:80'
+
+  db:
+    image: redislabs/redisgraph:2.8.14
+    restart: always
+    container_name: db-redis
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:
