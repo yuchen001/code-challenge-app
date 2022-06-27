@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Redis;
-use Predis\Client;
 use Redis\Graph;
 use Redis\Graph\Node;
 use Redis\Graph\Edge;
@@ -25,6 +24,9 @@ class LoadData extends Command
      */
     protected $description = 'Load airports and flights data from the remote service.';
 
+
+    private const flag_key = 'save_flag';
+
     /**
      * Execute the console command.
      *
@@ -32,14 +34,16 @@ class LoadData extends Command
      */
     public function handle(): int
     {
+        $graph = new Graph('flight-route', Redis::connection()->client());
+
+        if (static::check_if_exist_data())
+            return 0;
+
         [$airports, $flights] = static::read_json();
 
         /**
          *  save airports
          */
-        $redis = new Client('redis://127.0.0.1:6379/');
-        $graph = new Graph('flight-route', $redis);
-
         foreach ($airports as &$value){
             $graph->addNode(new Node("$value[iata]:Airport", $value));
         }
@@ -72,6 +76,12 @@ class LoadData extends Command
         }
 
         $result = $graph->commit();
+
+        # set the flag for mark the data has been stored.
+        Redis::set(static::flag_key, true);
+
+        echo 'load end.';
+
         $result->prettyPrint();
         return 0;
     }
@@ -87,5 +97,15 @@ class LoadData extends Command
         $airports = json_decode(file_get_contents($air_file), true);
         $flights = json_decode(file_get_contents($flight_file), true);
         return [$airports, $flights];
+    }
+
+    private static function check_if_exist_data()
+    {
+        $flag = Redis::get(static::flag_key);
+        if ($flag){
+            echo "the data was save.";
+        }
+
+        return $flag;
     }
 }

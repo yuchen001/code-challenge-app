@@ -17,8 +17,8 @@ class FlightRouteController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
 
-        $from = $request->query('from');
-        $to = $request->query('to');
+        $from = $request->query('from', '');
+        $to = $request->query('to', '');
 
         $result = Flight::shortestPaths($from, $to);
         return response()->json($result);

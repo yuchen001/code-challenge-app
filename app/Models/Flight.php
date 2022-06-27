@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Predis\Client;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 use Redis\Graph;
+
 
 class Flight
 {
@@ -47,6 +49,9 @@ class Flight
             RETURN flight.id, flight.from, flight.to
         ");
 
+        Log::info("query result:");
+        Log::info("site: ".count($query_result->values));
+
         $result = [];
         while ($v = $query_result->fetch()) {
             $result[] = static::to_obj($v);
@@ -66,5 +71,5 @@ class Flight
     }
 }
 
-Flight::$redis = new Client('redis://127.0.0.1:6379/');
+Flight::$redis = Redis::connection()->client();
 Flight::$graph = new Graph('flight-route', Flight::$redis);
