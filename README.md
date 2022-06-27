@@ -24,3 +24,15 @@ multi-leg flight
 no flight path that reaches
 []
 ```
+
+# RUN Steps
+
+### 1. Docker compose up
+Just operate normally.    
+`docker compose up`
+
+### 2. Load Data (**Note**)
+
+For the first boot, the data must be saved to the database.    
+Step 1 is completed, the following command is executed:    
+`docker compose exec app php artisan loaddata`
